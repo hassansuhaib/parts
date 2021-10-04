@@ -1,19 +1,22 @@
 const axios = require('axios')
+const { generateSignature } = require('./signature')
 
-const motorURL =
-  'https://api.motor.com/v1/documentation#operation/get/Information'
+const generateAxios = (url) => {
+  const PublicKey = 'BngKX33aYF'
+  const { signature, timestamp } = generateSignature(url)
+  const date = new Date()
+  const reqAxios = axios.create({
+    baseURL: 'https://api.motor.com',
+    timout: 1000,
+    headers: {
+      Authorization: `Shared ${PublicKey}:${signature}`,
+      Date: date.toUTCString(),
+    },
+  })
 
-const motor = axios.create({
-  baseURL: 'https://api.motor.com/v1/documentation#operation/get/Information',
-})
+  return { signature, timestamp, reqAxios }
+}
 
-motor.interceptors.request.use(
-  (config) => {
-    config.headers.TokenKey = 'tGsrr'
-    config.headers.Token = 'iocdQbzt4uGcP0kKEgDEF1z6f'
-    return config
-  },
-  (error) => Promise.reject(error)
-)
-
-module.exports = { motor }
+module.exports = {
+  generateAxios,
+}
